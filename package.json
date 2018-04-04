@@ -1,7 +1,7 @@
 {
-  "name": "docket",
+  "name": "evolvus-docket",
   "version": "1.0.0",
-  "description": "",
+  "description": "docket - audit component of the Evolvus Docket Server",
   "main": "server/server.js",
   "scripts": {
     "test": "mocha **/*.test.js",
