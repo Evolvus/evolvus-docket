@@ -1,4 +1,4 @@
-# What is evolvus-user ?
+# What is evolvus-docket ?
 
 `evolvus-docket` is a component of the `evolvus-docket-server` that encapsulates audit events.
 
