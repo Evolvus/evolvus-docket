@@ -20,7 +20,7 @@ module.exports = (grunt) => {
         options: {
           reporter: "spec",
         },
-        src: ["test/db/*.js"]
+        src: ["test/index.js", "test/db/*.js"]
       }
     },
     jshint: {
@@ -28,7 +28,7 @@ module.exports = (grunt) => {
         "esversion": 6
       },
       files: {
-        src: ["Gruntfile.js", "db/*.js", "test/**/*.js"]
+        src: ["gruntfile.js", "index.js", "db/*.js", "test/index.js", "test/**/*.js"]
       }
     },
     watch: {
