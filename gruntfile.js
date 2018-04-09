@@ -1,17 +1,47 @@
+/*
+ ** Normally we would use dist folder for distribution code
+ ** but since we are coming from the java world - "target" folder
+ ** is more relevant to us. (default output folder of a maven job)
+ **
+ ** grunt clean => mvn clean
+ **
+ */
+
 module.exports = (grunt) => {
+
   grunt.initConfig({
+    env: {
+      test: {
+        DEBUG: "evolvus-docket*"
+      }
+    },
+    mochaTest: {
+      test: {
+        options: {
+          reporter: "spec",
+        },
+        src: ["test/db/*.js"]
+      }
+    },
     jshint: {
       options: {
         "esversion": 6
       },
       files: {
-        src: ['server/**/*.js']
+        src: ["Gruntfile.js", "db/*.js", "test/**/*.js"]
       }
+    },
+    watch: {
+      files: ["<%= jshint.files.src %>"],
+      tasks: ["jshint", "mochaTest"]
     }
-  })
+  });
 
-  grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks("grunt-env");
+  grunt.loadNpmTasks("grunt-mocha-test");
+  grunt.loadNpmTasks("grunt-contrib-jshint");
+  grunt.loadNpmTasks("grunt-contrib-watch");
 
-  grunt.registerTask('default', ['jshint']);
-
-}
+  //grunt.registerTask("ci-build", ["clean", "jshint", "copy", "mochaTest:coverage"]);
+  grunt.registerTask("default", ["jshint", "env:test", "mochaTest"]);
+};

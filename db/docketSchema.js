@@ -5,14 +5,14 @@ var nameValidator = [
   validate({
     validator: 'isLength',
     arguments: [3, 50],
-    message: 'Name should be between {ARGS[0]} and {ARGS[1]} characters',
+    message: 'Path {PATH} should be between {ARGS[0]} and {ARGS[1]} characters',
   }),
   validate({
     validator: 'isAlphanumeric',
     passIfEmpty: true,
-    message: 'Name should contain alpha-numeric characters only',
+    message: 'Path {PATH} should contain alpha-numeric characters only',
   }),
-]
+];
 var docketSchema = new mongoose.Schema({
   createdBy: {
     type: String,
@@ -21,15 +21,18 @@ var docketSchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    required: true
+    required: true,
+    validate: nameValidator
   },
   application: {
     type: String,
-    required: true
+    required: true,
+    validate: nameValidator
   },
   source: {
     type: String,
-    required: true
+    required: true,
+    validate: nameValidator
   },
   ipAddress: {
     type: String,
@@ -39,25 +42,24 @@ var docketSchema = new mongoose.Schema({
     type: String,
     required: false
   },
-  createdBy: {
-    type: String,
-    unique: false
-  },
   status: {
     type: String,
-    required: true
+    required: true,
+    enum: ["SUCCESS", "FAILURE", "success", "failure"]
   },
   eventDateTime: {
     type: Date,
-    required: false
+    required: true
   },
   details: {
     type: String,
-    required: true
+    required: true,
+    minlength: 5,
+    maxlength: 250
   },
   keyDataAsJSON: {
     type: String,
-    required: false
+    required: true
   },
   keywords: {
     type: String,
@@ -65,7 +67,5 @@ var docketSchema = new mongoose.Schema({
   }
 });
 
-var docket = mongoose.model('Docket', docketSchema);
-module.exports = {
-  Docket
-};
+
+module.exports = docketSchema;

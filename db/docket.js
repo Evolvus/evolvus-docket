@@ -1,63 +1,71 @@
-const mongoose = require('mongoose');
-var {
-  docketCollection
-} = require('../docketModel/docketSchema');
-
-mongoose.Promise = global.Promise;
-var ObjectId = require('mongodb')
+const debug = require("debug")("evolvus-docket:db:docket");
+const mongoose = require("mongoose");
+const ObjectId = require('mongodb')
   .ObjectID;
 
-var dbUrl = process.env.MONGO_DB_URL || 'mongodb://localhost:27017/TestDocket';
+const docketSchema = require("./docketSchema");
 
-mongoose.connect(dbUrl, (err, db) => {
-  if (err) {
-    console.log('Failed to connect to the database');
-  } else {
-    console.log('connected to mongodb');
-  }
-});
+//Creates docket Collection in the database
+var Docket = mongoose.model("Docket", docketSchema);
 
 /*
  ** Saves the object to the database and returns a Promise
  */
 module.exports.save = (docket) => {
-  var docketobj = new docketCollection(docket);
-  return docketobj.save();
-}
+  return new Promise((resolve, reject) => {
+    try {
+      let docketobj = new Docket(docket);
+
+      docketobj.save().then((res) => {
+          debug('saved successfully', res._id);
+          resolve(res);
+        }, (err) => {
+          debug(`failed to save with an error ${err}`);
+          reject(err);
+        })
+        .catch((e) => {
+          debug('exception on save', err);
+          reject(e);
+        });
+    } catch (e) {
+      debug(`caught exception: ${e}`);
+      reject(e);
+    }
+  });
+};
 
 /*
  ** Returns all the documents
  */
 module.exports.find = () => {
-  return docketCollection.find();
-}
+  return Docket.find();
+};
 
 /*
  ** Returns the documents based on sort parameter
  */
 module.exports.findBySort = (sortvalue) => {
-  return docketCollection.find().sort(sortvalue);
-}
+  return Docket.find().sort(sortvalue);
+};
 
 /*
  ** Returns the documents based on limit parameter
  */
 module.exports.findByLimit = (limit) => {
-  return docketCollection.find().sort({
+  return Docket.find().sort({
     eventDateTime: -1
   }).limit(limit);
-}
-
+};
 /*
- ** Finds the object for the id parameter from the docketCollection
+ ** Finds the object for the id parameter from the Docket
  ** Should return a promise
  */
 module.exports.findById = (id) => {
-  return docketCollection.findById({
+  return Docket.findById({
     _id: ObjectId(id)
   });
-}
+};
 
-module.exports.remove = () => {
-  return docketCollection.remove({});
-}
+module.exports.deleteAll = () => {
+  return Docket.remove({});
+};
