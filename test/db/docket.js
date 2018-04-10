@@ -4,7 +4,6 @@ const chai = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 const expect = chai.expect;
 const docket = require("../../db/docket");
-//const userSchema = require("../../db/userSchema");
 
 var MONGO_DB_URL = process.env.MONGO_DB_URL || "mongodb://localhost/TestDocket";
 
@@ -22,6 +21,18 @@ describe('db Docket testing', () => {
     createdBy: "Kavya",
     status: "success",
     details: "User Kavya logged into the application Platform",
+    eventDateTime: Date.now(),
+    keyDataAsJSON: "keydata"
+  };
+  let testDocket1 = {
+    name: 'LOGINEVENT',
+    application: 'RTP',
+    source: 'APPLICATION',
+    ipAddress: "193.168.11.115",
+    level: "info",
+    createdBy: "Ramya",
+    status: "SUCCESS",
+    details: "User Ramya logged into the application RTP",
     eventDateTime: Date.now(),
     keyDataAsJSON: "keydata"
   };
@@ -73,4 +84,237 @@ describe('db Docket testing', () => {
 
   });
 
+  describe("testing docket.findById", () => {
+    // Delete all records, insert one record , get its id
+    // 1. Query by this id and it should return one docket object
+    // 2. Query by an arbitrary id and it should return {}
+    // 3. Query with null id and it should throw IllegalArgumentException
+    // 4. Query with undefined and it should throw IllegalArgumentException
+    // 5. Query with arbitrary object
+
+    var id;
+    beforeEach((done) => {
+      docket.deleteAll()
+        .then((res) => {
+          docket.save(testDocket)
+            .then((savedObj) => {
+              id = savedObj._id;
+              done();
+            });
+        });
+    });
+
+    it("should return docket object identified by Id ", (done) => {
+      let res = docket.findById(id);
+      expect(res)
+        .to.eventually.have.property('_id')
+        .to.deep.equal(id)
+        .notify(done);
+    });
+
+    it("should return empty object i.e. {} as no user is identified by this Id ", (done) => {
+      let badId = new mongoose.mongo.ObjectId();
+      let res = docket.findById(badId);
+      expect(res)
+        .to.eventually.to.eql({})
+        .notify(done);
+    });
+
+    it("should throw IllegalArgumentException for undefined Id parameter ", (done) => {
+      let undefinedId;
+      let res = docket.findById(undefinedId);
+      expect(res)
+        .to.eventually.to.be.rejectedWith("IllegalArgumentException")
+        .notify(done);
+    });
+
+    it("should throw IllegalArgumentException for null Id parameter ", (done) => {
+      let res = docket.findById(null);
+      expect(res)
+        .to.eventually.to.be.rejectedWith("IllegalArgumentException")
+        .notify(done);
+    });
+
+    it("should be rejected for arbitrary object as Id parameter ", (done) => {
+      let id = testDocket;
+      let res = docket.findById(testDocket);
+      expect(res)
+        .to.eventually.to.be.rejectedWith("must be a single String of 12 bytes")
+        .notify(done);
+    });
+  });
+
+  describe('testing docket.findAll when data present', () => {
+    // 1. Delete all records in the table and Insert two new records.
+
+    // 2. find -should return an array of size 2 with the  two docket objects.
+
+    beforeEach((done) => {
+      docket.deleteAll()
+        .then((res) => {
+          docket.save(testDocket)
+            .then((res) => {
+              docket.save(testDocket1)
+                .then((res) => {
+                  done();
+                });
+            });
+        });
+    });
+
+    it('should return 2 docket objects', (done) => {
+      let res = docket.findAll();
+      expect(res)
+        .to.be.fulfilled.then((docs) => {
+          expect(docs)
+            .to.be.a('array');
+          expect(docs.length)
+            .to.equal(2);
+          expect(docs[0].name)
+            .to.equal(testDocket.name);
+          done();
+        });
+    });
+  });
+
+  describe('testing docket.findAll when there is no data in database', () => {
+    //1.Delete all the records from database
+    //2.Query the databse , should return empty array
+    beforeEach((done) => {
+      docket.deleteAll()
+        .then(() => {
+          done();
+        });
+    });
+
+    it('should return empty array', (done) => {
+      let res = docket.findAll();
+      expect(res)
+        .to.be.fulfilled.then((docs) => {
+          expect(docs)
+            .to.be.a('array');
+          expect(docs.length)
+            .to.equal(0);
+          expect(docs)
+            .to.eql([]);
+          done();
+        });
+    });
+  });
+
+  describe('testing findByLimit', () => {
+    //1.Insert 3 records to database
+    //2.Query database with limit=2,
+    //   should return 2 records
+    //3. For limit 0, less than 0 and for not a number should throw IllegalArgumentException
+    beforeEach((done) => {
+      docket.deleteAll().then((res) => {
+        docket.save(testDocket).then((res) => {
+          docket.save(testDocket1).then((res) => {
+            docket.save(testDocket).then((res) => {
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('should return 2 records', (done) => {
+      let res = docket.findByLimit(2);
+      expect(res)
+        .to.be.fulfilled.then((docs) => {
+          expect(docs)
+            .to.be.a('array');
+          expect(docs.length)
+            .to.equal(2);
+          expect(docs[0].name)
+            .to.equal(testDocket.name);
+          done();
+        });
+    });
+
+    it('should throw IllegalArgumentException if limit is 0', (done) => {
+      let res = docket.findByLimit(0);
+      expect(res)
+        .to.eventually.to.be.rejectedWith("IllegalArgumentException")
+        .notify(done);
+    });
+
+    it('should throw failed to parse error if limit is not a number', (done) => {
+      let res = docket.findByLimit('shgahga');
+      expect(res)
+        .to.eventually.to.be.rejectedWith("Failed to parse")
+        .notify(done);
+    });
+
+
+    it("should throw IllegalArgumentException for negative limit parameter ", (done) => {
+      let res = docket.findByLimit(-3);
+      expect(res)
+        .to.eventually.to.be.rejectedWith("IllegalArgumentException")
+        .notify(done);
+    });
+  });
+
+  describe('testing findBySort', () => {
+    //1.Insert 3 records to database
+    //2.Query database with sort parameter 'createdBy'
+    let testDocket2 = {
+      name: 'LOGINEVENT',
+      application: 'RTP',
+      source: 'APPLICATION',
+      ipAddress: "193.168.11.115",
+      level: "info",
+      createdBy: "Swathi",
+      status: "SUCCESS",
+      details: "User Swathi logged into the application RTP",
+      eventDateTime: Date.now(),
+      keyDataAsJSON: "keydata"
+    };
+    beforeEach((done) => {
+      docket.deleteAll().then((res) => {
+        docket.save(testDocket).then((res) => {
+          docket.save(testDocket1).then((res) => {
+            docket.save(testDocket2).then((res) => {
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('should return 3 records in inserted order', (done) => {
+      let res = docket.findBySort({
+        createdBy: 1
+      });
+      expect(res)
+        .to.be.fulfilled.then((docs) => {
+          expect(docs)
+            .to.be.a('array');
+          expect(docs.length)
+            .to.equal(3);
+          expect(docs[0].createdBy)
+            .to.equal(testDocket.createdBy);
+          done();
+        });
+    });
+
+    it('should return 3 records in non-inserted order', (done) => {
+      let res = docket.findBySort({
+        createdBy: -1
+      });
+      expect(res)
+        .to.be.fulfilled.then((docs) => {
+          expect(docs)
+            .to.be.a('array');
+          expect(docs.length)
+            .to.equal(3);
+          expect(docs[0].createdBy)
+            .to.equal(testDocket2.createdBy);
+          expect(docs[2].createdBy)
+            .to.equal(testDocket.createdBy);
+          done();
+        });
+    });
+  });
 });
