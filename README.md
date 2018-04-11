@@ -10,6 +10,9 @@
 ```bash
 $ npm install evolvus-docket --save
 ```
+
+## Code Quality
+Please check the code quality here - https://app.codacy.com/app/Evolvus/evolvus-docket/dashboard
 ## Usage
 
 
@@ -31,7 +34,7 @@ Please see the full [Contributors Graph](https://github.com/evolvus/evolvus-dock
 Feel free to reach out to any of the core contributors with your questions or
 concerns.
 
-[Kavya M](https://github.com/KmKavya)
+[Kavya](https://github.com/KmKavya)
 
 ## License
 (The MIT License)

@@ -28,7 +28,7 @@ module.exports = (grunt) => {
         "esversion": 6
       },
       files: {
-        src: ["gruntfile.js", "index.js", "db/*.js", "test/index.js", "test/**/*.js"]
+        src: ["gruntfile.js", "index.js", "db/*.js", "test/index.js", "test/**/*.js", "model/*.js"]
       }
     },
     watch: {

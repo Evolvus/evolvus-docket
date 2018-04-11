@@ -37,9 +37,9 @@ describe('db Docket testing', () => {
     keyDataAsJSON: "keydata"
   };
 
-  /*
-   ** Before doing any tests, first get the connection.
-   */
+
+  // Before doing any tests, first get the connection.
+
   before((done) => {
     mongoose.connect(MONGO_DB_URL);
     let connection = mongoose.connection;
@@ -146,8 +146,7 @@ describe('db Docket testing', () => {
 
   describe('testing docket.findAll when data present', () => {
     // 1. Delete all records in the table and Insert two new records.
-
-    // 2. find -should return an array of size 2 with the  two docket objects.
+    // 2. Find -should return an array of size 2 with the  two docket objects.
 
     beforeEach((done) => {
       docket.deleteAll()
@@ -178,8 +177,8 @@ describe('db Docket testing', () => {
   });
 
   describe('testing docket.findAll when there is no data in database', () => {
-    //1.Delete all the records from database
-    //2.Query the databse , should return empty array
+    // 1.Delete all the records from database
+    // 2.Query the databse , should return empty array
     beforeEach((done) => {
       docket.deleteAll()
         .then(() => {
@@ -203,10 +202,9 @@ describe('db Docket testing', () => {
   });
 
   describe('testing findByLimit', () => {
-    //1.Insert 3 records to database
-    //2.Query database with limit=2,
-    //   should return 2 records
-    //3. For limit 0, less than 0 and for not a number should throw IllegalArgumentException
+    // 1.Insert 3 records to database
+    // 2.Query database with limit=2,should return 2 records
+    // 3.For limit 0, less than 0 and for not a number should throw IllegalArgumentException
     beforeEach((done) => {
       docket.deleteAll().then((res) => {
         docket.save(testDocket).then((res) => {
@@ -247,7 +245,6 @@ describe('db Docket testing', () => {
         .notify(done);
     });
 
-
     it("should throw IllegalArgumentException for negative limit parameter ", (done) => {
       let res = docket.findByLimit(-3);
       expect(res)
@@ -257,8 +254,8 @@ describe('db Docket testing', () => {
   });
 
   describe('testing findBySort', () => {
-    //1.Insert 3 records to database
-    //2.Query database with sort parameter 'createdBy'
+    // 1.Insert 3 records to database
+    // 2.Query database with sort parameter 'createdBy'
     let testDocket2 = {
       name: 'LOGINEVENT',
       application: 'RTP',

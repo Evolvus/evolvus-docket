@@ -1,7 +1,7 @@
-var mongoose = require('mongoose');
-//var uniqueValidator = require('mongoose-unique-validator');
+const mongoose = require('mongoose');
 var validate = require('mongoose-validator');
-var nameValidator = [
+
+var Validator = [
   validate({
     validator: 'isLength',
     arguments: [3, 50],
@@ -13,26 +13,27 @@ var nameValidator = [
     message: 'Path {PATH} should contain alpha-numeric characters only',
   }),
 ];
+
 var docketSchema = new mongoose.Schema({
   createdBy: {
     type: String,
     required: true,
-    validate: nameValidator
+    validate: Validator
   },
   name: {
     type: String,
     required: true,
-    validate: nameValidator
+    validate: Validator
   },
   application: {
     type: String,
     required: true,
-    validate: nameValidator
+    validate: Validator
   },
   source: {
     type: String,
     required: true,
-    validate: nameValidator
+    validate: Validator
   },
   ipAddress: {
     type: String,

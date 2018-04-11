@@ -5,17 +5,16 @@ const ObjectId = require('mongodb')
 
 const docketSchema = require("./docketSchema");
 
-//Creates docket Collection in the database
+// Creates docket Collection in the database
 var Docket = mongoose.model("Docket", docketSchema);
 
-/*
- ** Saves the docket object to the database and returns a Promise
- */
+
+// Saves the docket object to the database and returns a Promise
+
 module.exports.save = (docket) => {
   return new Promise((resolve, reject) => {
     try {
       let docketobj = new Docket(docket);
-
       docketobj.save().then((res) => {
           debug('saved successfully', res._id);
           resolve(res);
@@ -34,20 +33,19 @@ module.exports.save = (docket) => {
   });
 };
 
-/*
- ** Returns all the documents in natural(inserted) order
- */
+
+// Returns all the documents in natural(inserted) order
+
 module.exports.findAll = () => {
   return Docket.find({});
 };
 
-/*
- ** Returns the documents based on sort parameter(non-natural order)
- */
+
+// Returns the documents based on sort parameter(non-natural order)
+
 module.exports.findBySort = (sortvalue) => {
   return Docket.find().sort(sortvalue);
 };
-
 
 // Returns the documents in LIFO order based on limit parameter
 // If limit parameter is zero,negative or not a number should reject with an error
@@ -110,9 +108,8 @@ module.exports.findById = (id) => {
   });
 };
 
-
-//Deletes all the docket records
-//To be used by test only
+// Deletes all the docket records
+// To be used by test only
 module.exports.deleteAll = () => {
   return Docket.remove({});
 };

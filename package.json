@@ -2,30 +2,28 @@
   "name": "evolvus-docket",
   "version": "1.0.0",
   "description": "docket - audit component of the Evolvus Docket Server",
-  "main": "server/server.js",
+  "main": "index.js",
   "scripts": {
-    "test": "mocha **/*.test.js",
-    "test-watch": "nodemon --exec 'npm test'"
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },"repository": {
+    "type": "git",
+    "url": "git+https://github.com/Evolvus/evolvus-docket.git"
   },
+  "keywords": [
+    "evolvus",
+    "docket",
+    "audit"
+  ],
   "author": "Kavya",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Evolvus/evolvus-docket/issues"
+  },
+  "homepage": "https://github.com/Evolvus/evolvus-docket#readme",
   "dependencies": {
-    "body-parser": "^1.18.2",
-    "crypto-js": "^3.1.9-1",
-    "date-and-time": "^0.6.2",
-    "ejs": "^2.5.7",
-    "email-validator": "^1.1.1",
-    "express": "^4.16.2",
-    "isemail": "^3.1.1",
     "jsonschema": "^1.2.4",
-    "jsonwebtoken": "^8.1.1",
-    "moment": "^2.20.1",
     "mongoose": "^5.0.7",
-    "mongoose-unique-validator": "^2.0.0",
-    "mongoose-validator": "^2.0.2",
-    "node-localstorage": "^1.3.0",
-    "password-validator": "^4.0.0",
-    "validator": "^9.4.1"
+    "mongoose-validator": "^2.0.2"
   },
   "devDependencies": {
     "chai": "^4.1.2",
