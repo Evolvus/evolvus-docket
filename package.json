@@ -1,11 +1,12 @@
 {
   "name": "evolvus-docket",
-  "version": "1.0.0",
+  "version": "0.0.5",
   "description": "docket - audit component of the Evolvus Docket Server",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
-  },"repository": {
+  },
+  "repository": {
     "type": "git",
     "url": "git+https://github.com/Evolvus/evolvus-docket.git"
   },

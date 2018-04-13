@@ -2,7 +2,7 @@
  ** JSON Schema representation of the Docket model
  */
 module.exports.schema = {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "http://json-schema.org/draft-06/schema#",
   "title": "DocketModel",
   "type": "object",
   "properties": {
@@ -35,7 +35,8 @@ module.exports.schema = {
     },
     "details": {
       "type": "string"
-    },
-    "required": ["name", "application", "source", "createdBy", "ipAddress", "status", "keyDataAsJSON", "details", "eventDateTime"]
-  }
+    }
+  },
+  "required": ["name", "application", "source", "createdBy", "ipAddress", "status", "keyDataAsJSON", "details", "eventDateTime"]
+
 };
