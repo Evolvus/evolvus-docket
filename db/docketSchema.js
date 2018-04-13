@@ -49,7 +49,7 @@ var docketSchema = new mongoose.Schema({
     enum: ["SUCCESS", "FAILURE", "success", "failure"]
   },
   eventDateTime: {
-    type: Date,
+    type: String,
     required: true
   },
   details: {

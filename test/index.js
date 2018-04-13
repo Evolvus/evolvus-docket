@@ -20,10 +20,11 @@ describe("docket model validation", () => {
       application: 'FLUX-CDA',
       source: 'APPLICATION',
       ipAddress: "193.168.11.115",
+      status: "success",
       level: "info",
       createdBy: "meghad",
       details: "User meghad logged into the application Platform",
-      eventDateTime: Date.now(),
+      eventDateTime: 'Date.now()',
       keyDataAsJSON: "keydata"
     };
 
