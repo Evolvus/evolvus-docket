@@ -22,13 +22,11 @@ var docketSchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    required: true,
-    validate: Validator
+    required: true
   },
   application: {
     type: String,
-    required: true,
-    validate: Validator
+    required: true
   },
   source: {
     type: String,
@@ -49,7 +47,7 @@ var docketSchema = new mongoose.Schema({
     enum: ["SUCCESS", "FAILURE", "success", "failure"]
   },
   eventDateTime: {
-    type: String,
+    type: Date,
     required: true
   },
   details: {

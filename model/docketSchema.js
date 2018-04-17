@@ -28,7 +28,8 @@ module.exports.schema = {
       "type": "string"
     },
     "eventDateTime": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "keyDataAsJSON": {
       "type": "string"

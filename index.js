@@ -19,7 +19,7 @@ module.exports.save = (docketObject) => {
   return new Promise((resolve, reject) => {
     try {
       docket.save(docketObject).then((result) => {
-        resolve(true);
+        resolve(result);
       }).catch((e) => {
         reject(e);
       });
