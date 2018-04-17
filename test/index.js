@@ -83,7 +83,7 @@ describe('docket model validation', () => {
     });
 
     it('should return all records', (done) => {
-      let res = docket.getAuditRecords();
+      let res = docket.getAll();
       expect(res)
         .to.be.fulfilled.then((docs) => {
           expect(docs)
@@ -104,7 +104,7 @@ describe('docket model validation', () => {
     });
 
     it('should return empty array', (done) => {
-      let res = docket.getAuditRecords();
+      let res = docket.getAll();
       expect(res)
         .to.be.fulfilled.then((docs) => {
           expect(docs)

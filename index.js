@@ -28,7 +28,7 @@ module.exports.save = (docketObject) => {
   });
 };
 
-module.exports.getAuditRecords = () => {
+module.exports.getAll = () => {
   return new Promise((resolve, reject) => {
     try {
       docket.findAll().then((docs) => {
