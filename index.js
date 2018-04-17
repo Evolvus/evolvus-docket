@@ -3,7 +3,6 @@ const docket = require("./db/docket");
 const validate = require("jsonschema")
   .validate;
 
-
 module.exports.validate = (docket) => {
   return new Promise((resolve, reject) => {
     try {
@@ -20,6 +19,20 @@ module.exports.save = (docketObject) => {
     try {
       docket.save(docketObject).then((result) => {
         resolve(result);
+      }).catch((e) => {
+        reject(e);
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+module.exports.getAuditRecords = () => {
+  return new Promise((resolve, reject) => {
+    try {
+      docket.findAll().then((docs) => {
+        resolve(docs);
       }).catch((e) => {
         reject(e);
       });

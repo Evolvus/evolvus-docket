@@ -14,16 +14,9 @@ const expect = chai.expect;
 chai.use(chaiAsPromised);
 
 const docket = require("../index");
+const db = require("../db/docket");
 
-describe("docket model validation", () => {
-  before((done) => {
-    mongoose.connect(MONGO_DB_URL);
-    let connection = mongoose.connection;
-    connection.once("open", () => {
-      debug("ok got the connection");
-      done();
-    });
-  });
+describe('docket model validation', () => {
   let docketObject = {
     name: 'LOGIN_EVENT',
     application: 'FLUX-CDA',
@@ -37,29 +30,91 @@ describe("docket model validation", () => {
     keyDataAsJSON: "keydata"
   };
 
-  it("valid user should validate successfully", (done) => {
-    try {
-      var res = docket.validate(docketObject);
-      expect(res)
-        .to.eventually.equal(true)
-        .notify(done);
-      // if notify is not done the test will fail
-      // with timeout
-    } catch (e) {
-      expect.fail(e, null, `valid docket object should not throw exception: ${e}`);
-    }
+  describe("docket model validation", () => {
+    before((done) => {
+      mongoose.connect(MONGO_DB_URL);
+      let connection = mongoose.connection;
+      connection.once("open", () => {
+        debug("ok got the connection");
+        done();
+      });
+    });
+
+
+    it("valid user should validate successfully", (done) => {
+      try {
+        var res = docket.validate(docketObject);
+        expect(res)
+          .to.eventually.equal(true)
+          .notify(done);
+        // if notify is not done the test will fail
+        // with timeout
+      } catch (e) {
+        expect.fail(e, null, `valid docket object should not throw exception: ${e}`);
+      }
+    });
+
+
+    it('should save a docket object to database', (done) => {
+      try {
+        var result = docket.save(docketObject);
+        expect(result)
+          .to.eventually.have.property('name')
+          .to.eql(docketObject.name)
+          .notify(done);
+      } catch (e) {
+        expect.fail(e, null, `saving docket object should not throw exception: ${e}`);
+      }
+    });
   });
 
+  describe('testing getAuditRecords', () => {
 
-  it('should save a docket object to database', (done) => {
-    try {
-      var result = docket.save(docketObject);
-      expect(result)
-        .to.eventually.have.property('name')
-        .to.eql(docketObject.name)
-        .notify(done);
-    } catch (e) {
-      expect.fail(e, null, `saving docket object should not throw exception: ${e}`);
-    }
+    beforeEach((done) => {
+      db.deleteAll().then((res) => {
+        db.save(docketObject).then((res) => {
+          db.save(docketObject).then((res) => {
+            db.save(docketObject).then((res) => {
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('should return all records', (done) => {
+      let res = docket.getAuditRecords();
+      expect(res)
+        .to.be.fulfilled.then((docs) => {
+          expect(docs)
+            .to.be.a('array');
+          expect(docs.length)
+            .to.equal(3);
+          done();
+        });
+    });
+  });
+
+  describe('testing getAuditRecords when there is no data', () => {
+
+    beforeEach((done) => {
+      db.deleteAll().then((res) => {
+        done();
+      });
+    });
+
+    it('should return empty array', (done) => {
+      let res = docket.getAuditRecords();
+      expect(res)
+        .to.be.fulfilled.then((docs) => {
+          expect(docs)
+            .to.be.a('array');
+          expect(docs.length)
+            .to.equal(0);
+          expect(docs)
+            .to.eql([]);
+          done();
+        });
+    });
   });
 });
