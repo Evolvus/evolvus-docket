@@ -117,4 +117,100 @@ describe('docket model validation', () => {
         });
     });
   });
+
+  describe('testing getById', () => {
+    // Insert one record , get its id
+    // 1. Query by this id and it should return one docket object
+    // 2. Query by an arbitrary id and it should return {}
+    // 3. Query with null id and it should throw IllegalArgumentException
+    // 4. Query with undefined and it should throw IllegalArgumentException
+    var id;
+    beforeEach((done) => {
+      db.save(docketObject).then((res) => {
+        id = res._id;
+        done();
+      });
+    });
+
+    it('should return one audit matching parameter id', (done) => {
+      var res = docket.getById(id);
+      expect(res).to.eventually.have.property('_id')
+        .to.eql(id)
+        .notify(done);
+    });
+
+    it('should return empty object i.e. {} as no user is identified by this Id ', (done) => {
+      let badId = new mongoose.mongo.ObjectId();
+      var res = docket.getById(badId);
+      expect(res).to.eventually.to.eql({})
+        .notify(done);
+    });
+
+    it("should throw IllegalArgumentException for undefined Id parameter ", (done) => {
+      let undefinedId;
+      let res = docket.getById(undefinedId);
+      expect(res)
+        .to.eventually.to.be.rejectedWith("IllegalArgumentException")
+        .notify(done);
+    });
+
+    it("should throw IllegalArgumentException for null Id parameter ", (done) => {
+      let res = docket.getById(null);
+      expect(res)
+        .to.eventually.to.be.rejectedWith("IllegalArgumentException")
+        .notify(done);
+    });
+  });
+
+  describe('testing getByLimit', () => {
+    // 1.Insert 3 records to database
+    // 2.Query database with limit=2,should return 2 records
+    // 3.For limit 0, less than 0 and for not a number should throw IllegalArgumentException
+    beforeEach((done) => {
+      db.deleteAll().then((res) => {
+        db.save(docketObject).then((res) => {
+          db.save(docketObject).then((res) => {
+            db.save(docketObject).then((res) => {
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('should return 2 records', (done) => {
+      let res = docket.getByLimit(2);
+      expect(res)
+        .to.be.fulfilled.then((docs) => {
+          expect(docs)
+            .to.be.a('array');
+          expect(docs.length)
+            .to.equal(2);
+          expect(docs[0].name)
+            .to.equal(docketObject.name);
+          done();
+        });
+    });
+
+    it('should throw IllegalArgumentException if limit is 0', (done) => {
+      let res = docket.getByLimit(0);
+      expect(res)
+        .to.eventually.to.be.rejectedWith("IllegalArgumentException")
+        .notify(done);
+    });
+
+    it('should throw failed to parse error if limit is not a number', (done) => {
+      let res = docket.getByLimit('shgahga');
+      expect(res)
+        .to.eventually.to.be.rejectedWith("Failed to parse")
+        .notify(done);
+    });
+
+    it("should throw IllegalArgumentException for negative limit parameter ", (done) => {
+      let res = docket.getByLimit(-3);
+      expect(res)
+        .to.eventually.to.be.rejectedWith("IllegalArgumentException")
+        .notify(done);
+    });
+  });
 });

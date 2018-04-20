@@ -41,3 +41,41 @@ module.exports.getAll = () => {
     }
   });
 };
+
+module.exports.getById = (id) => {
+  return new Promise((resolve, reject) => {
+    try {
+      if (typeof(id) == "undefined" || id == null) {
+        throw new Error("IllegalArgumentException: id is null or undefined");
+      }
+      docket.findById(id)
+        .then((res) => {
+          resolve(res);
+        }).catch((e) => {
+          reject(e);
+        });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+module.exports.getByLimit = (limit) => {
+  return new Promise((resolve, reject) => {
+    try {
+      if (limit === 0 || limit < 0) {
+        throw new Error("IllegalArgumentException:limit value cannot be negative/zero ");
+      }
+      if (isNaN(limit)) {
+        throw new Error("MongoError:Failed to parse,'limit' field must be numeric.");
+      }
+      docket.findByLimit(limit).then((docs) => {
+        resolve(docs);
+      }).catch((e) => {
+        reject(e);
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};

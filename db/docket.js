@@ -48,40 +48,20 @@ module.exports.findBySort = (sortvalue) => {
 };
 
 // Returns the documents in LIFO order based on limit parameter
-// If limit parameter is zero,negative or not a number should reject with an error
+
 module.exports.findByLimit = (limit) => {
-  if (limit > 0 && !isNaN(limit)) {
-    return Docket.find().sort({
-      eventDateTime: -1
-    }).limit(limit);
-  } else {
-    return new Promise((resolve, reject) => {
-      try {
-        if (limit === 0 || limit < 0) {
-          throw new Error("IllegalArgumentException:limit value cannot be negative/zero ");
-        }
-        if (isNaN(limit)) {
-          throw new Error("MongoError:Failed to parse,'limit' field must be numeric.");
-        }
-      } catch (e) {
-        debug(`caught exception ${e}`);
-        reject(e);
-      }
-    });
-  }
+  return Docket.find().sort({
+    eventDateTime: -1
+  }).limit(limit);
 };
 
 // Finds the docket object for the id parameter from the Docket collection
 // If there is no object matching the id, return empty object i.e. {}
-// null, undefined, invalid objects should be rejected with Invalid Argument Error
 // Should return a Promise
 
 module.exports.findById = (id) => {
   return new Promise((resolve, reject) => {
     try {
-      if (typeof(id) == "undefined" || id == null) {
-        throw new Error("IllegalArgumentException: id is null or undefined");
-      }
       Docket.findById({
           _id: new ObjectId(id)
         })

@@ -90,7 +90,7 @@ describe('db Docket testing', () => {
     // 2. Query by an arbitrary id and it should return {}
     // 3. Query with null id and it should throw IllegalArgumentException
     // 4. Query with undefined and it should throw IllegalArgumentException
-    // 5. Query with arbitrary object
+    // 3. Query with arbitrary object
 
     var id;
     beforeEach((done) => {
@@ -117,21 +117,6 @@ describe('db Docket testing', () => {
       let res = docket.findById(badId);
       expect(res)
         .to.eventually.to.eql({})
-        .notify(done);
-    });
-
-    it("should throw IllegalArgumentException for undefined Id parameter ", (done) => {
-      let undefinedId;
-      let res = docket.findById(undefinedId);
-      expect(res)
-        .to.eventually.to.be.rejectedWith("IllegalArgumentException")
-        .notify(done);
-    });
-
-    it("should throw IllegalArgumentException for null Id parameter ", (done) => {
-      let res = docket.findById(null);
-      expect(res)
-        .to.eventually.to.be.rejectedWith("IllegalArgumentException")
         .notify(done);
     });
 
@@ -229,27 +214,6 @@ describe('db Docket testing', () => {
             .to.equal(testDocket.name);
           done();
         });
-    });
-
-    it('should throw IllegalArgumentException if limit is 0', (done) => {
-      let res = docket.findByLimit(0);
-      expect(res)
-        .to.eventually.to.be.rejectedWith("IllegalArgumentException")
-        .notify(done);
-    });
-
-    it('should throw failed to parse error if limit is not a number', (done) => {
-      let res = docket.findByLimit('shgahga');
-      expect(res)
-        .to.eventually.to.be.rejectedWith("Failed to parse")
-        .notify(done);
-    });
-
-    it("should throw IllegalArgumentException for negative limit parameter ", (done) => {
-      let res = docket.findByLimit(-3);
-      expect(res)
-        .to.eventually.to.be.rejectedWith("IllegalArgumentException")
-        .notify(done);
     });
   });
 
