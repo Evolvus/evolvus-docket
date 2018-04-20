@@ -1,6 +1,6 @@
 {
   "name": "evolvus-docket",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "docket - audit component of the Evolvus Docket Server",
   "main": "index.js",
   "scripts": {
