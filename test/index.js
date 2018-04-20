@@ -213,4 +213,71 @@ describe('docket model validation', () => {
         .notify(done);
     });
   });
+
+  describe('testing getByParameters', () => {
+
+    beforeEach((done) => {
+      db.deleteAll().then((res) => {
+        db.save(docketObject).then((res) => {
+          db.save(docketObject).then((res) => {
+            db.save(docketObject).then((res) => {
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('should return 2 records', (done) => {
+      let parameters = {
+        application: 'FLUX-CDA'
+      };
+      let res = docket.getByParameters(parameters);
+      expect(res)
+        .to.be.fulfilled.then((docs) => {
+          expect(docs)
+            .to.be.a('array');
+          expect(docs.length)
+            .to.equal(3);
+          done();
+        });
+    });
+
+    it('should not return any records if parameters are not valid', (done) => {
+      let parameters = {
+        application: 'RTP'
+      };
+      let res = docket.getByParameters(parameters);
+      expect(res)
+        .to.be.fulfilled.then((docs) => {
+          expect(docs)
+            .to.be.a('array');
+          expect(docs.length)
+            .to.equal(0);
+          done();
+        });
+    });
+
+    it('should return documents based on eventdateTime', (done) => {
+      let parameters = {
+        toDate: Date.now(),
+        fromDate: "2018-04-18T05:37:47.199Z",
+        application: 'FLUX-CDA',
+        source: 'APPLICATION',
+        ipAddress: "193.168.11.115",
+        status: "success",
+        level: "info",
+        createdBy: "meghad",
+      };
+      let res = docket.getByParameters(parameters);
+      expect(res)
+        .to.be.fulfilled.then((docs) => {
+          expect(docs)
+            .to.be.a('array');
+          expect(docs.length)
+            .to.equal(3);
+          done();
+        });
+    });
+  });
 });

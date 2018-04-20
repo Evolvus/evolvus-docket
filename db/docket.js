@@ -40,6 +40,10 @@ module.exports.findAll = () => {
   return Docket.find({});
 };
 
+//Returns the documents by filtering according to the query string
+module.exports.findByParameters = (query) => {
+  return Docket.find(query);
+};
 
 // Returns the documents based on sort parameter(non-natural order)
 

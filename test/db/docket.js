@@ -14,8 +14,8 @@ chai.use(chaiAsPromised);
 describe('db Docket testing', () => {
   let testDocket = {
     name: 'EVENT',
-    application: 'platform',
-    source: 'application',
+    application: 'FLUX-CDA',
+    source: 'APPLICATION',
     ipAddress: "193.168.11.115",
     level: "info",
     createdBy: "Kavya",
@@ -27,7 +27,7 @@ describe('db Docket testing', () => {
   let testDocket1 = {
     name: 'LOGINEVENT',
     application: 'RTP',
-    source: 'APPLICATION',
+    source: 'application',
     ipAddress: "193.168.11.115",
     level: "info",
     createdBy: "Ramya",
@@ -36,7 +36,18 @@ describe('db Docket testing', () => {
     eventDateTime: Date.now(),
     keyDataAsJSON: "keydata"
   };
-
+  let testDocket2 = {
+    name: 'LOGINEVENT',
+    application: 'RTP',
+    source: 'APPLICATION',
+    ipAddress: "193.168.11.115",
+    level: "info",
+    createdBy: "Swathi",
+    status: "SUCCESS",
+    details: "User Swathi logged into the application RTP",
+    eventDateTime: Date.now(),
+    keyDataAsJSON: "keydata"
+  };
 
   // Before doing any tests, first get the connection.
 
@@ -220,18 +231,7 @@ describe('db Docket testing', () => {
   describe('testing findBySort', () => {
     // 1.Insert 3 records to database
     // 2.Query database with sort parameter 'createdBy'
-    let testDocket2 = {
-      name: 'LOGINEVENT',
-      application: 'RTP',
-      source: 'APPLICATION',
-      ipAddress: "193.168.11.115",
-      level: "info",
-      createdBy: "Swathi",
-      status: "SUCCESS",
-      details: "User Swathi logged into the application RTP",
-      eventDateTime: Date.now(),
-      keyDataAsJSON: "keydata"
-    };
+
     beforeEach((done) => {
       docket.deleteAll().then((res) => {
         docket.save(testDocket).then((res) => {
@@ -276,6 +276,135 @@ describe('db Docket testing', () => {
             .to.equal(testDocket.createdBy);
           done();
         });
+    });
+  });
+
+  describe('testing findByParameters', () => {
+    beforeEach((done) => {
+      docket.deleteAll().then((res) => {
+        docket.save(testDocket).then((res) => {
+          docket.save(testDocket1).then((res) => {
+            docket.save(testDocket2).then((res) => {
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('should return filtered documents', (done) => {
+      let query = {
+        application: 'RTP'
+      };
+      var res = docket.findByParameters(query);
+      expect(res).to.be.fulfilled.then((docs) => {
+        expect(docs)
+          .to.be.a('array');
+        expect(docs.length)
+          .to.equal(2);
+        expect(docs[0].application)
+          .to.equal(testDocket2.application);
+        done();
+      });
+    });
+
+    it('should return empty array when parameter is not valid', (done) => {
+      let query = {
+        application: 'RTPa'
+      };
+      var res = docket.findByParameters(query);
+      expect(res).to.be.fulfilled.then((docs) => {
+        expect(docs)
+          .to.be.a('array');
+        expect(docs.length)
+          .to.equal(0);
+        expect(docs)
+          .to.eql([]);
+        done();
+      });
+    });
+
+    it('should return empty array when parameter is not valid', (done) => {
+      let query = {
+        $and: [{
+          application: 'RTP'
+        }, {
+          source: 'APPLICATION'
+        }]
+      };
+      var res = docket.findByParameters(query);
+      expect(res).to.be.fulfilled.then((docs) => {
+        expect(docs)
+          .to.be.a('array');
+        expect(docs.length)
+          .to.equal(1);
+        // expect(docs)
+        //   .to.eql([]);
+        done();
+      });
+    });
+
+    it('should return 3 records according to eventDateTime', (done) => {
+      let query = {
+        $and: [{
+          eventDateTime: {
+            $gt: '2018-04-20T05:37:47.199Z'
+          }
+        }, {
+          eventDateTime: {
+            $lt: Date.now()
+          }
+        }]
+      };
+      var res = docket.findByParameters(query);
+      expect(res).to.be.fulfilled.then((docs) => {
+
+        expect(docs)
+          .to.be.a('array');
+        expect(docs.length)
+          .to.equal(3);
+        done();
+      });
+    });
+
+    it('should return 1 record matching query', (done) => {
+      let query = {
+        $and: [{
+            $and: [{
+              application: testDocket.application
+            }, {
+              source: testDocket.source
+            }, {
+              ipAddress: testDocket.ipAddress
+            }, {
+              createdBy: testDocket.createdBy
+            }, {
+              level: testDocket.level
+            }, {
+              status: testDocket.status
+            }]
+          },
+          {
+            $and: [{
+              eventDateTime: {
+                $gt: '2018-04-20T05:37:47.199Z'
+              }
+            }, {
+              eventDateTime: {
+                $lt: Date.now()
+              }
+            }]
+          }
+        ]
+      };
+      var res = docket.findByParameters(query);
+      expect(res).to.be.fulfilled.then((docs) => {
+        expect(docs)
+          .to.be.a('array');
+        expect(docs.length)
+          .to.equal(1);
+        done();
+      });
     });
   });
 });

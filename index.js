@@ -79,3 +79,48 @@ module.exports.getByLimit = (limit) => {
     }
   });
 };
+
+module.exports.getByParameters = (parameters) => {
+  return new Promise((resolve, reject) => {
+    try {
+      if (typeof parameters.fromDate !== 'undefined' && typeof parameters.toDate !== 'undefined') {
+        parameters = {
+          $and: [{
+              $and: [{
+                application: parameters.application
+              }, {
+                source: parameters.source
+              }, {
+                ipAddress: parameters.ipAddress
+              }, {
+                createdBy: parameters.createdBy
+              }, {
+                level: parameters.level
+              }, {
+                status: parameters.status
+              }]
+            },
+            {
+              $and: [{
+                eventDateTime: {
+                  $gt: parameters.fromDate
+                }
+              }, {
+                eventDateTime: {
+                  $lt: parameters.toDate
+                }
+              }]
+            }
+          ]
+        };
+      }
+      docket.findByParameters(parameters).then((docs) => {
+        resolve(docs);
+      }).catch((e) => {
+        reject(e);
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
