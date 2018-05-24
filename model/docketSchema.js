@@ -22,7 +22,7 @@ module.exports.schema = {
       "type": "string"
     },
     "level": {
-      "type": ["string", null]
+      "type": ["string", "null"]
     },
     "status": {
       "type": "string"
