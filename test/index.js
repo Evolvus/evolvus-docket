@@ -30,6 +30,15 @@ describe('docket model validation', () => {
     keyDataAsJSON: "keydata"
   };
 
+  let invalidObject={
+    name: 'LOGIN_EVENT',
+    application: 'FLUX-CDA',
+    source: 'APPLICATION',
+    ipAddress: "193.168.11.115",
+    status: "success",
+    level: "info"
+  };
+
   describe("docket model validation", () => {
     before((done) => {
       mongoose.connect(MONGO_DB_URL);
@@ -46,6 +55,19 @@ describe('docket model validation', () => {
         var res = docket.validate(docketObject);
         expect(res)
           .to.eventually.equal(true)
+          .notify(done);
+        // if notify is not done the test will fail
+        // with timeout
+      } catch (e) {
+        expect.fail(e, null, `valid docket object should not throw exception: ${e}`);
+      }
+    });
+
+    it("should return validation errors", (done) => {
+      try {
+        var res = docket.validate(invalidObject);
+        expect(res)
+          .to.be.rejected
           .notify(done);
         // if notify is not done the test will fail
         // with timeout

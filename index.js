@@ -7,7 +7,11 @@ module.exports.validate = (docket) => {
   return new Promise((resolve, reject) => {
     try {
       var res = validate(docket, docketSchema);
-      resolve(res.valid);
+      if(res.valid){
+        resolve(res.valid);
+      } else {
+        reject(res.errors);
+      }
     } catch (err) {
       reject(err);
     }
