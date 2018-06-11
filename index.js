@@ -32,10 +32,10 @@ module.exports.save = (docketObject) => {
   });
 };
 
-module.exports.getAll = () => {
+module.exports.getAll = (limit) => {
   return new Promise((resolve, reject) => {
     try {
-      docket.findAll().then((docs) => {
+      docket.findAll(limit).then((docs) => {
         resolve(docs);
       }).catch((e) => {
         reject(e);

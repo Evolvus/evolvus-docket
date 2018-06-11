@@ -36,8 +36,15 @@ module.exports.save = (docket) => {
 
 // Returns all the documents in natural(inserted) order
 
-module.exports.findAll = () => {
-  return Docket.find({});
+module.exports.findAll = (limit) => {
+  if(limit < 1) {
+    return Docket.find({}).sort({
+      eventDateTime: -1
+    });
+  }
+  return Docket.find({}).sort({
+    eventDateTime: -1
+  }).limit(limit);
 };
 
 //Returns the documents by filtering according to the query string

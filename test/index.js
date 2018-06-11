@@ -104,8 +104,20 @@ describe('docket model validation', () => {
       });
     });
 
-    it('should return all records', (done) => {
-      let res = docket.getAll();
+    it('should return limited number of records', (done) => {
+      let res = docket.getAll(3);
+      expect(res)
+        .to.be.fulfilled.then((docs) => {
+          expect(docs)
+            .to.be.a('array');
+          expect(docs.length)
+            .to.equal(3);
+          done();
+        });
+    });
+
+    it('should return all records if limit is less than 1', (done) => {
+      let res = docket.getAll(0);
       expect(res)
         .to.be.fulfilled.then((docs) => {
           expect(docs)
@@ -126,7 +138,7 @@ describe('docket model validation', () => {
     });
 
     it('should return empty array', (done) => {
-      let res = docket.getAll();
+      let res = docket.getAll(3);
       expect(res)
         .to.be.fulfilled.then((docs) => {
           expect(docs)

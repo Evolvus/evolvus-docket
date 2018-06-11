@@ -158,7 +158,21 @@ describe('db Docket testing', () => {
     });
 
     it('should return 2 docket objects', (done) => {
-      let res = docket.findAll();
+      let res = docket.findAll(2);
+      expect(res)
+        .to.be.fulfilled.then((docs) => {
+          expect(docs)
+            .to.be.a('array');
+          expect(docs.length)
+            .to.equal(2);
+          expect(docs[0].name)
+            .to.equal(testDocket.name);
+          done();
+        });
+    });
+
+    it('should return all docket objects when limit is less than 1', (done) => {
+      let res = docket.findAll(-1);
       expect(res)
         .to.be.fulfilled.then((docs) => {
           expect(docs)
@@ -183,7 +197,7 @@ describe('db Docket testing', () => {
     });
 
     it('should return empty array', (done) => {
-      let res = docket.findAll();
+      let res = docket.findAll(1);
       expect(res)
         .to.be.fulfilled.then((docs) => {
           expect(docs)
