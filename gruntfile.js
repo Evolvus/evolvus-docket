@@ -20,7 +20,7 @@ module.exports = (grunt) => {
         options: {
           reporter: "spec",
         },
-        src: ["test/index.js", "test/db/*.js"]
+        src: ["test/index.js"]
       }
     },
     jshint: {

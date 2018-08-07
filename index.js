@@ -1,129 +1,106 @@
-const docketSchema = require("./model/docketSchema").schema;
-const docket = require("./db/docket");
+const debug = require("debug")("evolvus-docket:index");
+const _ = require("lodash");
+const model = require("./model/docketSchema");
+const dbSchema = require("./db/docketSchema");
+// const docket = require("./db/docket");
+const Dao = require("@evolvus/evolvus-mongo-dao").Dao;
+const collection = new Dao("audit", dbSchema);
+
 const validate = require("jsonschema")
   .validate;
+
+var filterAttributes = model.filterAttributes;
+var sortAttributes = model.sortableAttributes;
+
+module.exports = {
+  model,
+  dbSchema,
+  filterAttributes,
+  sortAttributes
+};
+
 
 module.exports.validate = (docket) => {
   return new Promise((resolve, reject) => {
     try {
-      var res = validate(docket, docketSchema);
-      if(res.valid){
+      debug(`Input object is ${JSON.stringify(docket)}`);
+      var res = validate(docket, model.schema);
+      if (res.valid) {
+        debug(`Validation against JSON schema: Successfull`);
         resolve(res.valid);
       } else {
+        debug(`Validation against JSON schema: Validation failed due to: ${JSON.stringify(res.errors)}`);
         reject(res.errors);
       }
     } catch (err) {
+      debug(`Try-catch failed due to: ${e}`);
       reject(err);
     }
   });
 };
 
+
 module.exports.save = (docketObject) => {
   return new Promise((resolve, reject) => {
     try {
-      docket.save(docketObject).then((result) => {
-        resolve(result);
-      }).catch((e) => {
-        reject(e);
-      });
-    } catch (e) {
-      reject(e);
-    }
-  });
-};
-
-module.exports.getAll = (limit) => {
-  return new Promise((resolve, reject) => {
-    try {
-      docket.findAll(limit).then((docs) => {
-        resolve(docs);
-      }).catch((e) => {
-        reject(e);
-      });
-    } catch (e) {
-      reject(e);
-    }
-  });
-};
-
-module.exports.getById = (id) => {
-  return new Promise((resolve, reject) => {
-    try {
-      if (typeof(id) == "undefined" || id == null) {
-        throw new Error("IllegalArgumentException: id is null or undefined");
+      debug(`Input docket object: ${JSON.stringify(docketObject)}`);
+      if (docketObject == null) {
+        throw new Error(`IllegalArgumentException: docketObject is ${docketObject}`);
       }
-      docket.findById(id)
-        .then((res) => {
-          resolve(res);
+      let res = validate(docketObject, model.schema);
+      debug(`Validation against JSON schema:result:${JSON.stringify(res)}`);
+      if (res.errors.length != 0) {
+        reject(res.errors);
+      } else {
+        docketObject.status = docketObject.status.toUpperCase();
+        collection.save(docketObject).then((result) => {
+          debug(`Audit saved successfully: ${result}`);
+          resolve(result);
         }).catch((e) => {
+          debug(`collection.save promise failed: ${e}`);
           reject(e);
         });
+      }
     } catch (e) {
+      debug(`Try-catch failed: ${e}`);
       reject(e);
     }
   });
 };
 
-module.exports.getByLimit = (limit) => {
+module.exports.find = (filter, orderby, skipCount, limit) => {
   return new Promise((resolve, reject) => {
     try {
-      if (limit === 0 || limit < 0) {
-        throw new Error("IllegalArgumentException:limit value cannot be negative/zero ");
-      }
-      if (isNaN(limit)) {
-        throw new Error("MongoError:Failed to parse,'limit' field must be numeric.");
-      }
-      docket.findByLimit(limit).then((docs) => {
-        resolve(docs);
-      }).catch((e) => {
-        reject(e);
-      });
-    } catch (e) {
-      reject(e);
-    }
-  });
-};
-
-module.exports.getByParameters = (parameters) => {
-  return new Promise((resolve, reject) => {
-    try {
-      if (typeof parameters.fromDate !== 'undefined' && typeof parameters.toDate !== 'undefined') {
-        parameters = {
+      let filterObject = _.pick(filter, filterAttributes);
+      if (filter.fromDate != null && filter.toDate != null) {
+        filterObject = {
           $and: [{
-              $and: [{
-                application: parameters.application
-              }, {
-                source: parameters.source
-              }, {
-                ipAddress: parameters.ipAddress
-              }, {
-                createdBy: parameters.createdBy
-              }, {
-                level: parameters.level
-              }, {
-                status: parameters.status
-              }]
+              $and: [filterObject]
             },
             {
               $and: [{
                 eventDateTime: {
-                  $gt: parameters.fromDate
+                  $gte: filter.fromDate
                 }
               }, {
                 eventDateTime: {
-                  $lt: parameters.toDate
+                  $lte: filter.toDate
                 }
               }]
             }
           ]
         };
       }
-      docket.findByParameters(parameters).then((docs) => {
-        resolve(docs);
+      debug(`FilterObject is: ${JSON.stringify(filterObject)}`);
+      collection.find(filterObject, orderby, skipCount, limit).then((audits) => {
+        debug(`Audits stored in database are: ${audits.length}`);
+        resolve(audits);
       }).catch((e) => {
+        debug(`Collection.find promise failed: ${e}`);
         reject(e);
       });
     } catch (e) {
+      debug(`Try-catch failed: ${e}`);
       reject(e);
     }
   });

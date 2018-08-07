@@ -1,58 +1,39 @@
 const debug = require("debug")("evolvus-docket.test.db.docket");
 const chai = require("chai");
-const mongoose = require("mongoose");
-var MONGO_DB_URL = process.env.MONGO_DB_URL || "mongodb://localhost/TestDocket";
+const chaiAsPromised = require("chai-as-promised");
+
 /*
  ** chaiAsPromised is needed to test promises
  ** it adds the "eventually" property
  **
  ** chai and others do not support async / await
  */
-const chaiAsPromised = require("chai-as-promised");
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
 
 const docket = require("../index");
-const db = require("../db/docket");
+const dbSchema = require("../db/docketSchema");
+const testData = require("./docketTestData");
 
-describe('docket model validation', () => {
-  let docketObject = {
-    name: 'LOGIN_EVENT',
-    application: 'FLUX-CDA',
-    source: 'APPLICATION',
-    ipAddress: "193.168.11.115",
-    status: "success",
-    level: "info",
-    createdBy: "meghad",
-    details: "User meghad logged into the application Platform",
-    eventDateTime: new Date().toISOString(),
-    keyDataAsJSON: "keydata"
-  };
+const Dao = require("@evolvus/evolvus-mongo-dao").Dao;
+const collection = new Dao("audit", dbSchema);
+const connection = require("@evolvus/evolvus-mongo-dao").connection;
 
-  let invalidObject={
-    name: 'LOGIN_EVENT',
-    application: 'FLUX-CDA',
-    source: 'APPLICATION',
-    ipAddress: "193.168.11.115",
-    status: "success",
-    level: "info"
-  };
+describe('Docket validation', () => {
+  // before we start the tests, connect to the database
+  before((done) => {
+    var dbConnection = connection.connect("DOCKET").then(() => {
+      done();
+    }).catch((e) => {
+      done(e);
+    });
+  });
 
   describe("docket model validation", () => {
-    before((done) => {
-      mongoose.connect(MONGO_DB_URL);
-      let connection = mongoose.connection;
-      connection.once("open", () => {
-        debug("ok got the connection");
-        done();
-      });
-    });
-
-
-    it("valid user should validate successfully", (done) => {
+    it("valid audit record should validate successfully", (done) => {
       try {
-        var res = docket.validate(docketObject);
+        var res = docket.validate(testData.docketObject1);
         expect(res)
           .to.eventually.equal(true)
           .notify(done);
@@ -65,7 +46,7 @@ describe('docket model validation', () => {
 
     it("should return validation errors", (done) => {
       try {
-        var res = docket.validate(invalidObject);
+        var res = docket.validate(testData.invalidObject);
         expect(res)
           .to.be.rejected
           .notify(done);
@@ -76,242 +57,121 @@ describe('docket model validation', () => {
       }
     });
 
+  });
+
+  describe("tesing save method", () => {
+
+    beforeEach(function(done) {
+      // this.timeout(10000);
+      collection.deleteAll({})
+        .then((data) => {
+
+          done();
+        });
+    });
 
     it('should save a docket object to database', (done) => {
       try {
-        var result = docket.save(docketObject);
+        var result = docket.save(testData.docketObject1);
         expect(result)
-          .to.eventually.have.property('name')
-          .to.eql(docketObject.name)
+          .to.eventually.have.property('_id')
           .notify(done);
       } catch (e) {
         expect.fail(e, null, `saving docket object should not throw exception: ${e}`);
       }
     });
+
+    it('should not save a invalid user object to database', (done) => {
+      try {
+        var result = docket.save(testData.invalidObject);
+        expect(result)
+          .to.be.rejected
+          .notify(done);
+      } catch (e) {
+        expect.fail(e, null, `exception: ${e}`);
+      }
+    });
+
   });
 
-  describe('testing getAuditRecords', () => {
 
-    beforeEach((done) => {
-      db.deleteAll().then((res) => {
-        db.save(docketObject).then((res) => {
-          db.save(docketObject).then((res) => {
-            db.save(docketObject).then((res) => {
-              done();
-            });
-          });
-        });
-      });
-    });
+  describe("tesing find method", () => {
 
-    it('should return limited number of records', (done) => {
-      let res = docket.getAll(3);
-      expect(res)
-        .to.be.fulfilled.then((docs) => {
-          expect(docs)
-            .to.be.a('array');
-          expect(docs.length)
-            .to.equal(3);
+    beforeEach(function(done) {
+      // this.timeout(10000);
+      collection.deleteAll({})
+        .then((data) => {
+          return collection.save(testData.docketObject1);
+        }).then(() => {
+          return collection.save(testData.docketObject2);
+        }).then(() => {
+          return collection.save(testData.docketObject3);
+        }).then(() => {
+          return collection.save(testData.docketObject4);
+        }).then(() => {
+          return collection.save(testData.docketObject5);
+        }).then(() => {
+          return collection.save(testData.docketObject6);
+        }).then(() => {
           done();
         });
     });
 
-    it('should return all records if limit is less than 1', (done) => {
-      let res = docket.getAll(0);
-      expect(res)
-        .to.be.fulfilled.then((docs) => {
-          expect(docs)
-            .to.be.a('array');
-          expect(docs.length)
-            .to.equal(3);
-          done();
-        });
+    it('should return all records', (done) => {
+      try {
+        var result = docket.find({}, {}, 0, 0);
+        expect(result)
+          .to.eventually.have.lengthOf(6)
+          .notify(done);
+      } catch (e) {
+        expect.fail(e, null, `find should not throw exception: ${e}`);
+      }
     });
+
+    it('should return only SANDSTORM application audit records', (done) => {
+      try {
+        var result = docket.find({
+          application: "SANDSTORM_CONSOLE"
+        }, {}, 0, 0);
+        expect(result)
+          .to.eventually.have.lengthOf(2)
+          .notify(done);
+      } catch (e) {
+        expect.fail(e, null, `find should not throw exception: ${e}`);
+      }
+    });
+
+    it('should return only FAILURE audit records', (done) => {
+      try {
+        var result = docket.find({
+          status: "FAILURE"
+        }, {}, 0, 0);
+        expect(result)
+          .to.eventually.have.lengthOf(2)
+          .notify(done);
+      } catch (e) {
+        expect.fail(e, null, `find should not throw exception: ${e}`);
+      }
+    });
+
+    //There are 4 records between eventDateTime 07/08/2018 to 09/08/2018
+    it('should return only audit records between eventDateTime 07/08/2018 to 09/08/2018', (done) => {
+      try {
+        var result = docket.find({
+          fromDate: "2018-08-07T09:26:07.990Z",
+          toDate: "2018-08-09T09:26:07.990Z"
+        }, {}, 0, 0);
+        expect(result)
+          .to.eventually.have.lengthOf(4)
+          .notify(done);
+      } catch (e) {
+        expect.fail(e, null, `find should not throw exception: ${e}`);
+      }
+    });
+
+
   });
 
-  describe('testing getAuditRecords when there is no data', () => {
 
-    beforeEach((done) => {
-      db.deleteAll().then((res) => {
-        done();
-      });
-    });
 
-    it('should return empty array', (done) => {
-      let res = docket.getAll(3);
-      expect(res)
-        .to.be.fulfilled.then((docs) => {
-          expect(docs)
-            .to.be.a('array');
-          expect(docs.length)
-            .to.equal(0);
-          expect(docs)
-            .to.eql([]);
-          done();
-        });
-    });
-  });
-
-  describe('testing getById', () => {
-    // Insert one record , get its id
-    // 1. Query by this id and it should return one docket object
-    // 2. Query by an arbitrary id and it should return {}
-    // 3. Query with null id and it should throw IllegalArgumentException
-    // 4. Query with undefined and it should throw IllegalArgumentException
-    var id;
-    beforeEach((done) => {
-      db.save(docketObject).then((res) => {
-        id = res._id;
-        done();
-      });
-    });
-
-    it('should return one audit matching parameter id', (done) => {
-      var res = docket.getById(id);
-      expect(res).to.eventually.have.property('_id')
-        .to.eql(id)
-        .notify(done);
-    });
-
-    it('should return empty object i.e. {} as no user is identified by this Id ', (done) => {
-      let badId = new mongoose.mongo.ObjectId();
-      var res = docket.getById(badId);
-      expect(res).to.eventually.to.eql({})
-        .notify(done);
-    });
-
-    it("should throw IllegalArgumentException for undefined Id parameter ", (done) => {
-      let undefinedId;
-      let res = docket.getById(undefinedId);
-      expect(res)
-        .to.eventually.to.be.rejectedWith("IllegalArgumentException")
-        .notify(done);
-    });
-
-    it("should throw IllegalArgumentException for null Id parameter ", (done) => {
-      let res = docket.getById(null);
-      expect(res)
-        .to.eventually.to.be.rejectedWith("IllegalArgumentException")
-        .notify(done);
-    });
-  });
-
-  describe('testing getByLimit', () => {
-    // 1.Insert 3 records to database
-    // 2.Query database with limit=2,should return 2 records
-    // 3.For limit 0, less than 0 and for not a number should throw IllegalArgumentException
-    beforeEach((done) => {
-      db.deleteAll().then((res) => {
-        db.save(docketObject).then((res) => {
-          db.save(docketObject).then((res) => {
-            db.save(docketObject).then((res) => {
-              done();
-            });
-          });
-        });
-      });
-    });
-
-    it('should return 2 records', (done) => {
-      let res = docket.getByLimit(2);
-      expect(res)
-        .to.be.fulfilled.then((docs) => {
-          expect(docs)
-            .to.be.a('array');
-          expect(docs.length)
-            .to.equal(2);
-          expect(docs[0].name)
-            .to.equal(docketObject.name);
-          done();
-        });
-    });
-
-    it('should throw IllegalArgumentException if limit is 0', (done) => {
-      let res = docket.getByLimit(0);
-      expect(res)
-        .to.eventually.to.be.rejectedWith("IllegalArgumentException")
-        .notify(done);
-    });
-
-    it('should throw failed to parse error if limit is not a number', (done) => {
-      let res = docket.getByLimit('shgahga');
-      expect(res)
-        .to.eventually.to.be.rejectedWith("Failed to parse")
-        .notify(done);
-    });
-
-    it("should throw IllegalArgumentException for negative limit parameter ", (done) => {
-      let res = docket.getByLimit(-3);
-      expect(res)
-        .to.eventually.to.be.rejectedWith("IllegalArgumentException")
-        .notify(done);
-    });
-  });
-
-  describe('testing getByParameters', () => {
-
-    beforeEach((done) => {
-      db.deleteAll().then((res) => {
-        db.save(docketObject).then((res) => {
-          db.save(docketObject).then((res) => {
-            db.save(docketObject).then((res) => {
-              done();
-            });
-          });
-        });
-      });
-    });
-
-    it('should return 2 records', (done) => {
-      let parameters = {
-        application: 'FLUX-CDA'
-      };
-      let res = docket.getByParameters(parameters);
-      expect(res)
-        .to.be.fulfilled.then((docs) => {
-          expect(docs)
-            .to.be.a('array');
-          expect(docs.length)
-            .to.equal(3);
-          done();
-        });
-    });
-
-    it('should not return any records if parameters are not valid', (done) => {
-      let parameters = {
-        application: 'RTP'
-      };
-      let res = docket.getByParameters(parameters);
-      expect(res)
-        .to.be.fulfilled.then((docs) => {
-          expect(docs)
-            .to.be.a('array');
-          expect(docs.length)
-            .to.equal(0);
-          done();
-        });
-    });
-
-    it('should return documents based on eventdateTime', (done) => {
-      let parameters = {
-        toDate: Date.now(),
-        fromDate: "2018-04-18T05:37:47.199Z",
-        application: 'FLUX-CDA',
-        source: 'APPLICATION',
-        ipAddress: "193.168.11.115",
-        status: "success",
-        level: "info",
-        createdBy: "meghad",
-      };
-      let res = docket.getByParameters(parameters);
-      expect(res)
-        .to.be.fulfilled.then((docs) => {
-          expect(docs)
-            .to.be.a('array');
-          expect(docs.length)
-            .to.equal(3);
-          done();
-        });
-    });
-  });
 });

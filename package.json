@@ -1,6 +1,6 @@
 {
-  "name": "evolvus-docket",
-  "version": "0.1.6",
+  "name": "@evolvus/evolvus-docket",
+  "version": "1.0.0",
   "description": "docket - audit component of the Evolvus Docket Server",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,10 @@
   },
   "homepage": "https://github.com/Evolvus/evolvus-docket#readme",
   "dependencies": {
+    "@evolvus/evolvus-mongo-dao": "^1.0.1",
     "jsonschema": "^1.2.4",
-    "mongoose": "^5.0.7",
+    "lodash": "^4.17.10",
+    "mongoose": "^5.2.3",
     "mongoose-validator": "^2.0.2"
   },
   "devDependencies": {
@@ -35,8 +37,5 @@
     "grunt-env": "^0.4.4",
     "grunt-mocha-test": "^0.13.3",
     "mocha": "^5.0.5"
-  },
-  "publishConfig": {
-    "registry": "http://10.10.69.203:8081/repository/npm-private/"
   }
 }
