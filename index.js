@@ -43,18 +43,18 @@ module.exports.validate = (docket) => {
 module.exports.save = (docketObject) => {
   return new Promise((resolve, reject) => {
     try {
-      debug(`Input docket object: ${JSON.stringify(docketObject)}`);
+      debug(`Input docket object: ${JSON.stringify(docketObject.name)}`);
       if (docketObject == null) {
         throw new Error(`IllegalArgumentException: docketObject is ${docketObject}`);
       }
       let res = validate(docketObject, model.schema);
-      debug(`Validation against JSON schema:result:${JSON.stringify(res)}`);
+      debug(`Validation against JSON schema:result:${JSON.stringify(res.valid)}`);
       if (res.errors.length != 0) {
         reject(res.errors);
       } else {
         docketObject.status = docketObject.status.toUpperCase();
         collection.save(docketObject).then((result) => {
-          debug(`Audit saved successfully: ${result}`);
+          debug(`Audit saved successfully: ${result.name}`);
           resolve(result);
         }).catch((e) => {
           debug(`collection.save promise failed: ${e}`);
