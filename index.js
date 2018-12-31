@@ -43,10 +43,10 @@ module.exports.validate = (docket) => {
 module.exports.save = (docketObject) => {
   return new Promise((resolve, reject) => {
     try {
-      debug(`Input docket object: ${JSON.stringify(docketObject.name)}`);
       if (docketObject == null) {
         throw new Error(`IllegalArgumentException: docketObject is ${docketObject}`);
       }
+      debug(`Input docket object: ${JSON.stringify(docketObject.name)}`);
       let res = validate(docketObject, model.schema);
       debug(`Validation against JSON schema:result:${JSON.stringify(res.valid)}`);
       if (res.errors.length != 0) {
